@@ -16,7 +16,6 @@ export default {
     return {
       data: [
         ["Região", "Federal", "Estadual", "Municipal", "Privada"],
-        ["Cidade", 1000, 400, 200, 80],
         ["Microrregião", 1170, 460, 250, 20],
         ["Mesorregião", 660, 1120, 300, 40]
       ],
