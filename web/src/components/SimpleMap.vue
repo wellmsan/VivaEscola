@@ -13,10 +13,13 @@
         v-for="item in municipios"
         v-bind:key="item._id"
         :lat-lng="[item.latitude, item.longitude]"
+        v-b-modal.modal-dashboard
         @click="loadDashCidade(item)"
       >
-        <l-popup>
-          <DashboardCidade 
+      </l-marker>      
+      <b-modal ref="modal-dashboard" size="xl" id="modal-dashboard">
+        <template v-slot:modal-header>
+          <ModalHeader 
             :cidade="cidade"
             :qtdTotalEscolas="qtdTotalEscolas" 
             :qtdTotalFederal="qtdTotalFederal"  
@@ -24,8 +27,23 @@
             :qtdTotalMunicipal="qtdTotalMunicipal"
             :qtdTotalPrivada="qtdTotalPrivada"
           />
-        </l-popup>
-      </l-marker>
+        </template>
+        <ModalContent 
+          :cidade="cidade"
+        />
+        <template v-slot:modal-footer>
+        <div class="w-100">
+          <b-button
+            variant="primary"
+            size="sm"
+            class="float-right"
+            @click="closeModal()"
+          >
+            Fechar
+          </b-button>
+        </div>
+      </template>
+      </b-modal>
       <l-geo-json v-if="show" :geojson="geojson" :options="options" :options-style="styleFunction" />
     </l-map>
   </div>
@@ -33,11 +51,12 @@
 
 <script>
 import { latLng } from "leaflet";
-import { LMap, LTileLayer, LGeoJson, LPopup, LMarker } from "vue2-leaflet";
+import { LMap, LTileLayer, LGeoJson, LMarker } from "vue2-leaflet";
 
 import bus from "../config/events/bus";
 
-import DashboardCidade from "./DashboardCidade";
+import ModalHeader from "./ModalHeader";
+import ModalContent from "./ModalContent";
 import MunicipioService from "../services/MunicipioService";
 import DadosCensoService from "../services/DadosCensoService";
 
@@ -48,8 +67,8 @@ export default {
     LTileLayer,
     LGeoJson,
     LMarker,
-    LPopup,
-    DashboardCidade
+    ModalHeader,
+    ModalContent
   },
 
   data() {
@@ -143,7 +162,12 @@ export default {
           this.loading = true;
       })
 
+      setTimeout(() => {
+        this.$refs['modal-dashboard'].show()
+      })
       //bus.$emit("loadCidade", cidade);
+
+      
     },
 
     listarCidades() {
@@ -170,6 +194,10 @@ export default {
 
     showLongText() {
       this.showParagraph = !this.showParagraph;
+    },
+
+    closeModal() {
+      this.$refs['modal-dashboard'].hide()
     }
   }
 };

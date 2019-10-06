@@ -11,9 +11,6 @@
           ></b-form-select>
         </b-col>
         <b-col>
-          <b-button variant="danger" @click="somarizar()">Gerar Dados</b-button>
-        </b-col>
-        <b-col>
           <div>
             <b-img class="logoIFBA" right :src="'../../assets/img/logoIFBA.jpg'" alt="Right image"></b-img>
             <b-img
@@ -31,10 +28,6 @@
 
 <script>
 import bus from "../config/events/bus";
-import MunicipioService from "../services/MunicipioService";
-import EscolaService from "../services/EscolaService";
-import CensoService from "../services/CensoService";
-import DadosCensoService from "../services/DadosCensoService";
 
 export default {
   name: "FooterBar",
@@ -79,14 +72,7 @@ export default {
         { text: "Mesorregiões", value: "mesorregiao" },
         { text: "Microrregiões", value: "microrregiao" },
         { text: "Cidades", value: "cidade" }
-      ],
-      ano: 0,
-      municipio_id: 0,
-      TP_SITUACAO_FUNCIONAMENTO: 1,
-      QTD_ESC_FEDERAL: 0,
-      QTD_ESC_ESTADUAL: 0,
-      QTD_ESC_MUNICIPAL: 0,
-      QTD_ESC_PRIVADA: 0
+      ]
     };
   },
 
@@ -95,65 +81,6 @@ export default {
   methods: {
     submit() {
       bus.$emit("submit", this.estado, this.tipoMapa);
-    },
-
-    somarizar() {
-
-      MunicipioService.get(290280710)
-      .then(response => {    
-        
-
-        const pMunicipio = response.data.map((municipio) => {
-          let NU_ANO_CENSO = 0
-          let MUNICIPIO_ID = 0
-          let TP_SITUACAO_FUNCIONAMENTO = 0
-          let QTD_ESC_FEDERAL = 0
-          let QTD_ESC_ESTADUAL = 0
-          let QTD_ESC_MUNICIPAL = 0
-          let QTD_ESC_PRIVADA = 0
-
-          let paramsEscola = {
-              municipio_id: municipio._id
-            };
-
-          EscolaService.listar(paramsEscola)
-            .then(response => {
-
-                const pEscola = response.data.map((escola) => {
-                  
-                  let codEdidade = escola._id;
-                  let anosCenso = [2014, 2015, 2016, 2017, 2018];
-                  
-                  return {
-                    CO_ENTIDADE: codEdidade,
-                    NO_ANO_CENSO: anosCenso
-                  }
-
-                })
-
-            }).catch(e => {
-              // eslint-disable-next-line
-              console.error("ERROR: " + e);
-            })
-            .finally(() => (this.loading = false));
-
-          return {
-            QTD_ESC_FEDERAL: QTD_ESC_FEDERAL,
-            QTD_ESC_ESTADUAL: QTD_ESC_ESTADUAL,
-            QTD_ESC_MUNICIPAL: QTD_ESC_MUNICIPAL,
-            QTD_ESC_PRIVADA: QTD_ESC_PRIVADA,
-          }
-        })
-
-        // eslint-disable-next-line
-        console.log("MUN: " + pMunicipio[0].QTD_ESC_MUNICIPAL);        
-
-      }).catch(e => {
-          // eslint-disable-next-line
-          console.error("ERROR: " + e);
-        })
-        .finally(() => (this.loading = false));
-      
     }
   }
 };
