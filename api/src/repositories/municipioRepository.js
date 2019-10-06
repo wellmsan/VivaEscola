@@ -6,7 +6,6 @@ class MunicipioRepository {
     list(params) {
         let page = params.page;
         delete params.page;
-        console.log('LIST ' + params)
         return Entity.find(params)
             .sort({_id: 1})
     }

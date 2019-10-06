@@ -16,7 +16,6 @@ class MunicipioRepository {
     list(params) {
         let page = params.page;
         delete params.page;
-        console.log('LIST ' + params);
         return _municipio2.default.find(params).sort({ _id: 1 });
     }
 

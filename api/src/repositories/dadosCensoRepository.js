@@ -6,7 +6,6 @@ class DadosCensoRepository {
     list(params) {
         let page = params.page;
         delete params.page;
-        
         return Entity.find(params)
             .sort({_id: 1})
     }

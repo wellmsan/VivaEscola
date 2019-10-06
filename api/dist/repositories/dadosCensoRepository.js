@@ -16,7 +16,6 @@ class DadosCensoRepository {
     list(params) {
         let page = params.page;
         delete params.page;
-
         return _dadosCenso2.default.find(params).sort({ _id: 1 });
     }
 

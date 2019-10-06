@@ -68,10 +68,8 @@
 import { latLng } from "leaflet";
 import { LMap, LTileLayer, LGeoJson, LPopup, LMarker } from "vue2-leaflet";
 import MunicipioService from "../services/MunicipioService";
-import EscolaService from "../services/EscolaService";
-import CensoService from "../services/CensoService";
+import DadosCensoService from "../services/DadosCensoService";
 import bus from "../config/events/bus";
-import osm from "../config/service/osmauth";
 import ColumnChart from "./charts/Column";
 import CoreChart from "./charts/BubbleChart";
 import Treemap from "./charts/Treemap";
@@ -170,64 +168,27 @@ export default {
       this.center = latLng(cidade.latitude, cidade.longitude);
       this.currentCenter = latLng(cidade.latitude, cidade.longitude);
 
-      this.loadGraficos(cidade, this.anoSelecionado);
+      let params = {
+        municipio: cidade._id,
+        ano: this.anoSelecionado
+      }
 
-      // bus.$emit("loadCidade", cidade);
-    },
-
-    loadGraficos(cidade, anoSelecionado){
-      this.qtdTotalEscolas = 0
-      this.qtdTotalFederal = 0
-      this.qtdTotalEstadual = 0
-      this.qtdTotalMunicipal = 0
-      this.qtdTotalPrivada = 0
-      MunicipioService.get(cidade._id)
-        .then(response => {
-          response.data.forEach( municipio => {
-            let paramsEscola = {
-              municipio_id: municipio._id
-            }
-
-            EscolaService.listar(paramsEscola)
-              .then(response => {
-                
-                response.data.forEach(escola => {
-                  let codEdidade = escola._id
-
-                  let params = {
-                    NU_ANO_CENSO: parseInt(anoSelecionado),
-                    TP_SITUACAO_FUNCIONAMENTO: 1,
-                    CO_ENTIDADE: codEdidade
-                  }
-                  
-                  CensoService.listar(params)
-                    .then(response => {
-
-                      response.data.forEach(censo => {
-                          
-                          if(censo.TP_DEPENDENCIA === 1){ this.qtdTotalFederal++ }
-                          if(censo.TP_DEPENDENCIA === 2){ this.qtdTotalEstadual++ }
-                          if(censo.TP_DEPENDENCIA === 3){ this.qtdTotalMunicipal++ }
-                          if(censo.TP_DEPENDENCIA === 4){ this.qtdTotalPrivada++ }
-                      })   
-                      this.qtdTotalEscolas = this.qtdTotalFederal + this.qtdTotalEstadual + this.qtdTotalMunicipal + this.qtdTotalPrivada
-                      this.cidade = cidade                       
-                    })
-                    .catch(e => {
-                      // eslint-disable-next-line
-                      console.error("ERROR: " + e);
-                    }).finally(() => this.loading = false);
-                })
-              }).catch(e => {
-                // eslint-disable-next-line
-                console.error("ERROR: " + e);
-              }).finally(() => this.loading = false)
-            
-          })
+      DadosCensoService.listar(params)
+        .then( response => {
+          this.qtdTotalEscolas = response.data[0].count
+          this.qtdTotalFederal = response.data[0].federal
+          this.qtdTotalEstadual = response.data[0].estadual
+          this.qtdTotalMunicipal = response.data[0].municipal
+          this.qtdTotalPrivada = response.data[0].privada
+          this.cidade = cidade
         }).catch(e => {
           // eslint-disable-next-line
           console.error("ERROR: " + e);
-        }).finally(() => this.loading = false)
+        }).finally(() => {
+          this.loading = true;
+        })
+
+      // bus.$emit("loadCidade", cidade);
     },
 
     listarCidades() {
@@ -242,62 +203,6 @@ export default {
           // eslint-disable-next-line
           console.error(e);
         }).finally(() => this.loading = false);
-    },
-
-    listarMesorregiao() {
-      let params = {
-        estado: this.estadoSelecionado
-      };
-      MunicipioService.listar(params)
-        .then(response => {
-          let mesorregiaoList = [];
-          response.data.forEach(element => {
-            mesorregiaoList.push("Mesorregião " + element.mesorregiao);
-          });
-          mesorregiaoList = Array.from(new Set(mesorregiaoList));
-
-          mesorregiaoList.forEach(mesorregiao => {
-            // eslint-disable-next-line
-            console.log(mesorregiao);
-            osm
-              .get("&q=" + mesorregiao + "&polygon_geojson=1&format=json")
-              .then(response => {
-                //mesorregiao.geojson = response.data
-                // eslint-disable-next-line
-                console.log(response.data);
-              })
-              .catch(e => {
-                // eslint-disable-next-line
-                console.error(e);
-              }).finally(() => this.loading = false);
-          });
-        })
-        .catch(e => {
-          // eslint-disable-next-line
-          console.error(e);
-        });
-      // this.geojson = this.municipios.geojson
-    },
-
-    listarMicrorregiao() {
-      let params = {
-        estado: this.estadoSelecionado
-      };
-      MunicipioService.listar(params)
-        .then(response => {
-          let microrregiaoList = [];
-          response.data.forEach(element => {
-            microrregiaoList.push("Microrregião " + element.microrregiao);
-          });
-          microrregiaoList = Array.from(new Set(microrregiaoList));
-          // eslint-disable-next-line
-          console.log(microrregiaoList);
-        })
-        .catch(e => {
-          // eslint-disable-next-line
-          console.error(e);
-        }).finally(() => this.loading = false);
-      // this.geojson = this.municipios.geojson
     },
 
     zoomUpdate(zoom) {
@@ -327,10 +232,7 @@ export default {
     
     .areaBtnRegioes {
         text-align: right;
-    }
-
-    .btnRegioes {
-        margin-right: 2px;
+        padding-top: 3vh;
     }
 
     .selectAno {
