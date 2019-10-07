@@ -2,17 +2,19 @@
     <div class="container-fluid">
         <b-row >
             <b-col>
-                <h3>{{ cidade.nome }} ({{ qtdTotalEscolas }})</h3>
+                <h3>{{ cidade != null ? cidade.nome : '' }} ({{ qtdTotalEscolas }})</h3>
             </b-col>
             <b-col>
                 <b-form-select v-model="anoSelecionado" :options="anoFiltro" class="selectAno" @change="loadGraficos(cidade, anoSelecionado)"></b-form-select>
             </b-col>
             <b-col>
                 <div class="areaBtnRegioes">
-                    <b-badge variant="success">Federal ({{ qtdTotalFederal }}) </b-badge>
-                    <b-badge variant="warning">Estadual ({{ qtdTotalEstadual }}) </b-badge>
-                    <b-badge variant="info">Municipal ({{ qtdTotalMunicipal }}) </b-badge>
-                    <b-badge variant="danger">Privada ({{ qtdTotalPrivada }}) </b-badge>
+                    <small>
+                        <b-badge variant="success">Federal ({{ qtdTotalFederal }}) </b-badge>
+                        <b-badge variant="warning">Estadual ({{ qtdTotalEstadual }}) </b-badge>
+                        <b-badge variant="info">Municipal ({{ qtdTotalMunicipal }}) </b-badge>
+                        <b-badge variant="danger">Privada ({{ qtdTotalPrivada }}) </b-badge>
+                    </small>
                 </div>
             </b-col>
         </b-row>
@@ -70,6 +72,8 @@ export default {
                 { value: '2014', text: '2014'}
             ]
         }
+    },
+    created() {
     }
 
 }
@@ -91,6 +95,6 @@ export default {
     }
 
     .selectAno {
-      width: 1vh;
+      width: 0.3vh;
     }
 </style>

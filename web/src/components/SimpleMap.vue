@@ -32,17 +32,17 @@
           :cidade="cidade"
         />
         <template v-slot:modal-footer>
-        <div class="w-100">
-          <b-button
-            variant="primary"
-            size="sm"
-            class="float-right"
-            @click="closeModal()"
-          >
-            Fechar
-          </b-button>
-        </div>
-      </template>
+          <div class="w-100">
+            <b-button
+              variant="primary"
+              size="sm"
+              class="float-right"
+              @click="closeModal()"
+            >
+              Fechar
+            </b-button>
+          </div>
+        </template>
       </b-modal>
       <l-geo-json v-if="show" :geojson="geojson" :options="options" :options-style="styleFunction" />
     </l-map>

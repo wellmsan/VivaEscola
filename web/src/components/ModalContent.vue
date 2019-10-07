@@ -4,14 +4,14 @@
             <b-row>
               <b-col>
                 <b-row>
-                  <ColumnChart :cidade="cidade" />
+                  <ColumnChart />
                 </b-row>
                 <b-row>
-                  <CoreChart />
+                  <!-- CoreChart / -->
                 </b-row>
               </b-col>
               <b-col>
-                <Treemap />
+                <!-- Treemap / -->
               </b-col>
             </b-row>  
           </b-container>
@@ -19,18 +19,20 @@
 </template>
 
 <script>
-// import bus from "../config/events/bus";
+import bus from "../config/events/bus";
 
 import ColumnChart from "./charts/Column";
-import CoreChart from "./charts/BubbleChart";
-import Treemap from "./charts/Treemap";
+// import CoreChart from "./charts/BubbleChart";
+// import Treemap from "./charts/Treemap";
+
+import MunicipioService from "../services/MunicipioService";
 
 export default {
     name: "ModalContent",
     components: {
-        ColumnChart,
+        ColumnChart /*,
         CoreChart,
-        Treemap
+        Treemap */
     },
     props: {
       cidade: Object
@@ -38,20 +40,57 @@ export default {
     data() {
         return {
             loading: true,
-            max: 100,
-            estadoSelecionado: "",
-            anoSelecionado: '2018',
-            anoFiltro: [
-                { value: '2018', text: '2018'},
-                { value: '2017', text: '2017'},
-                { value: '2016', text: '2016'},
-                { value: '2015', text: '2015'},
-                { value: '2014', text: '2014'}
-            ]
+            columnData: [],
+            cidadesMicrorregiao: [],
+            cidadesMesorregiao: []
         }
-    }
+    },
 
-}
+    created() {
+      if(this.cidade != null){
+        this.loadCidadesMicrorregiao(this.cidade.microrregiao)
+        this.loadCidadesMesorregiao(this.cidade.mesorregiao)
+      }
+    },
+
+    methods: {
+      async loadCidadesMicrorregiao(microrregiao) {
+        this.loading = true
+        let params = {
+          microrregiao: microrregiao
+        }
+        this.cidadesMicrorregiao = await MunicipioService.listar(params)
+          .then(response => {
+            return response.data
+          }).catch(e => {
+              // eslint-disable-next-line
+              console.error("ERROR: " + e);
+          }).finally(() => {
+              this.loading = false;
+          })
+        bus.$emit('cidadesMicrorregiao', this.cidadesMicrorregiao)
+      },
+
+      async loadCidadesMesorregiao(mesorregiao) {
+        this.loading = true
+        let params = {
+          mesorregiao: mesorregiao
+        }
+        this.cidadesMesorregiao = await MunicipioService.listar(params)
+          .then(response => {
+            return response.data      
+          }).catch(e => {
+              // eslint-disable-next-line
+              console.error("ERROR: " + e);
+          }).finally(() => {
+              this.loading = false;
+          })
+        bus.$emit('cidadesMesorregiao', this.cidadesMesorregiao)
+      }
+      
+  }
+  
+};
 </script>
 
 <style>
