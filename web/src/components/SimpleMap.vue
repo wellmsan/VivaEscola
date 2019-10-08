@@ -1,5 +1,6 @@
 <template>
   <div id="map">
+    <loading :active.sync="loading" :is-full-page="fullpage"></loading>
     <l-map
       v-if="showMap"
       :zoom="zoom"
@@ -50,6 +51,8 @@
 </template>
 
 <script>
+import Loading from 'vue-loading-overlay';
+
 import { latLng } from "leaflet";
 import { LMap, LTileLayer, LGeoJson, LMarker } from "vue2-leaflet";
 
@@ -63,6 +66,7 @@ import DadosCensoService from "../services/DadosCensoService";
 export default {
   name: "SimpleMap",
   components: {
+    Loading,
     LMap,
     LTileLayer,
     LGeoJson,
@@ -73,8 +77,9 @@ export default {
 
   data() {
     return {
-      zoom: 10,
       loading: false,
+      fullpage: true,
+      zoom: 10,
       show: true,
       center: latLng(-12.96214, -38.50045),
       geojson: [],
@@ -138,9 +143,7 @@ export default {
 
   methods: {
     loadDashCidade(cidade) {
-      this.loading = this.$loading.show({
-        container: this.fullPage ? null : this.$refs.formContainer,
-      });
+      this.loading = true
       //this.center = latLng(cidade.latitude, cidade.longitude);
       //this.currentCenter = latLng(cidade.latitude, cidade.longitude);
   
@@ -165,17 +168,12 @@ export default {
           // eslint-disable-next-line
           console.error("ERROR: " + e);
       }).finally(() => {
-          this.loading.hide();
+          this.loading = false
       })
-      //bus.$emit("loadCidade", cidade);
-
-      
     },
 
-    listarCidades() {
-      this.loading = this.$loading.show({
-        container: this.fullPage ? null : this.$refs.formContainer
-      });
+    listarCidades() {            
+      this.loading = true
       let params = {
         estado: this.estadoSelecionado
       };
@@ -186,7 +184,7 @@ export default {
         .catch(e => {
           // eslint-disable-next-line
           console.error(e);
-        }).finally(() => this.loading.hide());
+        }).finally(() => this.loading = false);
     },
 
     zoomUpdate(zoom) {

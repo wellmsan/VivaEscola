@@ -1,10 +1,11 @@
 <template>
     <div>
+        <loading :active.sync="loading" :is-full-page="fullpage"></loading>
         <b-container fluid>
             <b-row>
               <b-col>
                 <b-row>
-                  <ColumnChart :data="columnData" :options="columnOptions" />
+                  <ColumnChart ref="column-chart" :data="columnData" :options="columnOptions" />
                 </b-row>
                 <b-row>
                   <!-- CoreChart / -->
@@ -19,6 +20,7 @@
 </template>
 
 <script>
+import Loading from 'vue-loading-overlay';
 // import bus from "../config/events/bus";
 
 import ColumnChart from "./charts/Column";
@@ -31,9 +33,10 @@ import DadosCensoService from "../services/DadosCensoService";
 export default {
     name: "ModalContent",
     components: {
-        ColumnChart /*,
-        CoreChart,
-        Treemap */
+      Loading,
+      ColumnChart /*,
+      CoreChart,
+      Treemap */
     },
     props: {
       cidade: Object
@@ -41,10 +44,9 @@ export default {
     data() {
         return {
             loading: false,
+            fullpage: true,
             columnData: [],
-            columnOptions: {
-              title: "Comparativo por Região"
-            },
+            columnOptions: {},
             dadosMicrorregiao: [],
             dadosMesorregiao: []
         }
@@ -52,6 +54,13 @@ export default {
 
     async created() {
       if(this.cidade != null){
+        this.loadColumnChart()
+      }
+    },
+
+    methods: {
+
+      async loadColumnChart(){
         this.loading = true
         const cidadesMicrorregiao = await this.loadCidadesMicrorregiao(this.cidade.microrregiao)
         const dadosMicrorregiao = await this.loadDados(cidadesMicrorregiao.data)
@@ -76,25 +85,26 @@ export default {
           this.dadosMicrorregiao,
           this.dadosMesorregiao
         ]
+        this.columnOptions = {
+          title: "Comparativo por Região"
+        }
         this.loading = false
-      }
-    },
+      },
 
-    methods: {
       async loadCidadesMicrorregiao(microrregiao) {
-        this.loading = true
         let params = {
           microrregiao: microrregiao
         }
-        return await MunicipioService.listar(params)
+        const result = await MunicipioService.listar(params)
+        return result
       },
 
       async loadCidadesMesorregiao(mesorregiao) {
-        this.loading = true
         let params = {
           mesorregiao: mesorregiao
         }
-        return await MunicipioService.listar(params)
+        const result = await MunicipioService.listar(params)
+        return result
       },
 
       async loadDados(cidades) {
@@ -106,7 +116,8 @@ export default {
         
           const pCidade = cidades.map( async (cidade) => {
             let params = {
-              municipio: cidade._id
+              municipio: cidade._id,
+              ano: 2018
             }
             await DadosCensoService.listar(params)
             .then(async (response) => {
@@ -120,7 +131,8 @@ export default {
           })
 
           await Promise.all(pCidade);
-          
+          // eslint-disable-next-line
+          console.log("ERROR: " + totalFederal);
           return {
             federal: totalFederal,
             estadual: totalEstadual,

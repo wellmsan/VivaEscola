@@ -1,5 +1,6 @@
 <template>
   <div>
+    <loading :active.sync="loading" :is-full-page="fullpage"></loading>
     <b-container fluid>
       <b-row>
         <b-col cols="3">
@@ -27,15 +28,17 @@
 </template>
 
 <script>
+import Loading from 'vue-loading-overlay';
 import bus from "../config/events/bus";
 
 export default {
   name: "FooterBar",
-  components: {},
+  components: { Loading },
 
   data() {
     return {
       loading: false,
+      fullpage: false,
       estado: null,
       estados: [
         { value: null, text: "Selecione" },
@@ -80,7 +83,9 @@ export default {
 
   methods: {
     submit() {
+      this.loading = true
       bus.$emit("submit", this.estado, this.tipoMapa);
+      this.loading = false
     }
   }
 };

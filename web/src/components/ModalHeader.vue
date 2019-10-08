@@ -1,5 +1,6 @@
 <template>
     <div class="container-fluid">
+        <loading :active.sync="loading" :is-full-page="fullpage"></loading>
         <b-row >
             <b-col>
                 <h3>{{ cidade != null ? cidade.nome : '' }} ({{ qtdTotalEscolas }})</h3>
@@ -32,6 +33,7 @@
 </template>
 
 <script>
+import Loading from 'vue-loading-overlay';
 
 export default {
     name: "ModalHeader",
@@ -58,9 +60,13 @@ export default {
         required: true
       }
     },
+    components: {
+        Loading
+    },
     data() {
         return {
-            loading: true,
+            loading: false,
+            fullpage: false,
             max: 100,
             estadoSelecionado: "",
             anoSelecionado: '2018',
