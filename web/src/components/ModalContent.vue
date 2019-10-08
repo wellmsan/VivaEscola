@@ -4,7 +4,7 @@
             <b-row>
               <b-col>
                 <b-row>
-                  <ColumnChart />
+                  <ColumnChart :data="columnData" :options="columnOptions" />
                 </b-row>
                 <b-row>
                   <!-- CoreChart / -->
@@ -19,13 +19,14 @@
 </template>
 
 <script>
-import bus from "../config/events/bus";
+// import bus from "../config/events/bus";
 
 import ColumnChart from "./charts/Column";
 // import CoreChart from "./charts/BubbleChart";
 // import Treemap from "./charts/Treemap";
 
 import MunicipioService from "../services/MunicipioService";
+import DadosCensoService from "../services/DadosCensoService";
 
 export default {
     name: "ModalContent",
@@ -39,17 +40,43 @@ export default {
     },
     data() {
         return {
-            loading: true,
+            loading: false,
             columnData: [],
-            cidadesMicrorregiao: [],
-            cidadesMesorregiao: []
+            columnOptions: {
+              title: "Comparativo por Região"
+            },
+            dadosMicrorregiao: [],
+            dadosMesorregiao: []
         }
     },
 
-    created() {
+    async created() {
       if(this.cidade != null){
-        this.loadCidadesMicrorregiao(this.cidade.microrregiao)
-        this.loadCidadesMesorregiao(this.cidade.mesorregiao)
+        this.loading = true
+        const cidadesMicrorregiao = await this.loadCidadesMicrorregiao(this.cidade.microrregiao)
+        const dadosMicrorregiao = await this.loadDados(cidadesMicrorregiao.data)
+        
+        const cidadesMesorregiao = await this.loadCidadesMesorregiao(this.cidade.mesorregiao)
+        const dadosMesorregiao = await this.loadDados(cidadesMesorregiao.data)
+
+        this.dadosMicrorregiao.push("Microrregião")
+        this.dadosMicrorregiao.push(dadosMicrorregiao.federal)
+        this.dadosMicrorregiao.push(dadosMicrorregiao.estadual)
+        this.dadosMicrorregiao.push(dadosMicrorregiao.municipal)
+        this.dadosMicrorregiao.push(dadosMicrorregiao.privada)
+
+        this.dadosMesorregiao.push("Mesorregião")
+        this.dadosMesorregiao.push(dadosMesorregiao.federal)
+        this.dadosMesorregiao.push(dadosMesorregiao.estadual)
+        this.dadosMesorregiao.push(dadosMesorregiao.municipal)
+        this.dadosMesorregiao.push(dadosMesorregiao.privada)
+        
+        this.columnData = [
+          ["Região", "Federal", "Estadual", "Municipal", "Privada"],
+          this.dadosMicrorregiao,
+          this.dadosMesorregiao
+        ]
+        this.loading = false
       }
     },
 
@@ -59,16 +86,7 @@ export default {
         let params = {
           microrregiao: microrregiao
         }
-        this.cidadesMicrorregiao = await MunicipioService.listar(params)
-          .then(response => {
-            return response.data
-          }).catch(e => {
-              // eslint-disable-next-line
-              console.error("ERROR: " + e);
-          }).finally(() => {
-              this.loading = false;
-          })
-        bus.$emit('cidadesMicrorregiao', this.cidadesMicrorregiao)
+        return await MunicipioService.listar(params)
       },
 
       async loadCidadesMesorregiao(mesorregiao) {
@@ -76,20 +94,45 @@ export default {
         let params = {
           mesorregiao: mesorregiao
         }
-        this.cidadesMesorregiao = await MunicipioService.listar(params)
-          .then(response => {
-            return response.data      
-          }).catch(e => {
-              // eslint-disable-next-line
-              console.error("ERROR: " + e);
-          }).finally(() => {
-              this.loading = false;
+        return await MunicipioService.listar(params)
+      },
+
+      async loadDados(cidades) {
+        try {
+          let totalFederal = 0
+          let totalEstadual = 0
+          let totalMunicipal = 0
+          let totalPrivada = 0
+        
+          const pCidade = cidades.map( async (cidade) => {
+            let params = {
+              municipio: cidade._id
+            }
+            await DadosCensoService.listar(params)
+            .then(async (response) => {
+              await response.data.forEach(dado => {
+                totalFederal += dado.federal,
+                totalEstadual += dado.estadual,
+                totalMunicipal += dado.municipal,
+                totalPrivada += dado.privada
+              })
+            })
           })
-        bus.$emit('cidadesMesorregiao', this.cidadesMesorregiao)
+
+          await Promise.all(pCidade);
+          
+          return {
+            federal: totalFederal,
+            estadual: totalEstadual,
+            municipal: totalMunicipal,
+            privada: totalPrivada
+          }
+        } catch (e) {
+          // eslint-disable-next-line
+          console.error("ERROR: " + e);
+        }  
       }
-      
   }
-  
 };
 </script>
 

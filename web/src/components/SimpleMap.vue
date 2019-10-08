@@ -121,7 +121,6 @@ export default {
   },
 
   created() {
-    this.loading = true;
     let vm = this;
     bus.$on("submit", function(estado, tipoMapa) {
       vm.estadoSelecionado = estado;
@@ -139,9 +138,12 @@ export default {
 
   methods: {
     loadDashCidade(cidade) {
-      this.center = latLng(cidade.latitude, cidade.longitude);
-      this.currentCenter = latLng(cidade.latitude, cidade.longitude);
-
+      this.loading = this.$loading.show({
+        container: this.fullPage ? null : this.$refs.formContainer,
+      });
+      //this.center = latLng(cidade.latitude, cidade.longitude);
+      //this.currentCenter = latLng(cidade.latitude, cidade.longitude);
+  
       let params = {
           municipio: cidade._id,
           ano: new Date().getFullYear() - 1
@@ -155,15 +157,15 @@ export default {
           this.qtdTotalMunicipal = response.data[0].municipal
           this.qtdTotalPrivada = response.data[0].privada
           this.cidade = cidade
+
+          setTimeout(() => {
+            this.$refs['modal-dashboard'].show()
+          })
       }).catch(e => {
           // eslint-disable-next-line
           console.error("ERROR: " + e);
       }).finally(() => {
-          this.loading = true;
-      })
-
-      setTimeout(() => {
-        this.$refs['modal-dashboard'].show()
+          this.loading.hide();
       })
       //bus.$emit("loadCidade", cidade);
 
@@ -171,6 +173,9 @@ export default {
     },
 
     listarCidades() {
+      this.loading = this.$loading.show({
+        container: this.fullPage ? null : this.$refs.formContainer
+      });
       let params = {
         estado: this.estadoSelecionado
       };
@@ -181,7 +186,7 @@ export default {
         .catch(e => {
           // eslint-disable-next-line
           console.error(e);
-        }).finally(() => this.loading = false);
+        }).finally(() => this.loading.hide());
     },
 
     zoomUpdate(zoom) {

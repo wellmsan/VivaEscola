@@ -1,15 +1,21 @@
 import Vue from 'vue'
 import App from './App.vue'
 import BootstrapVue from 'bootstrap-vue'
+import Loading from 'vue-loading-overlay';
 import { Icon } from "leaflet"
 import store from './store/state'
 import "leaflet.icon.glyph"
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import 'vue-loading-overlay/dist/vue-loading.css';
 
 import VueGoogleCharts from "vue-google-charts";
 
+Vue.use(Loading, {
+  loader: 'dots',
+  color: '#32CD32',
+});
 Vue.use(BootstrapVue)
 Vue.use(VueGoogleCharts)
 
