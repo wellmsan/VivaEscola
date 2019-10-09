@@ -34,6 +34,10 @@
         />
         <template v-slot:modal-footer>
           <div class="w-100">
+            <small><b>Microrregião: </b>{{ cidade.microrregiao }}</small> |
+            <small><b>Mesorregião: </b>{{ cidade.mesorregiao }}</small>
+          </div>
+          <div class="w-100">
             <b-button
               variant="primary"
               size="sm"

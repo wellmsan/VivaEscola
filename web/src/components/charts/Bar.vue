@@ -1,14 +1,13 @@
 <template>
   <div>
-    <GChart type="ColumnChart" :data="data" :options="options"/>
+    <GChart type="BarChart" :data="data" :options="options" />
   </div>
 </template>
 <script>
-
 import { GChart } from "vue-google-charts";
 
 export default {
-  name: "ColumnChart",
+  name: "BarChart",
   components: {
     GChart
   },
@@ -16,8 +15,5 @@ export default {
     data: Array,
     options: Object
   }
-}
+};
 </script>
-
-<style>
-</style>
